@@ -1,25 +1,74 @@
-import logo from './logo.svg';
-import './App.css';
+import React, {useState} from 'react';
+import Input from './components/input';
+import MessagesContentHolder from './components/content_holder';
 
-function App() {
+function App() 
+{
+  const [messages_array, setMessagesArray] = useState([]);//([{msg:"fdsss"},{msg:"fdsss"}]);
+
+  const refresh = (msg, on_finish)=>{
+
+    fetch('https://p2-1643028221716.azurewebsites.net/get_data?msg='+msg)
+    .then(data => data.text())
+    .then(data => {
+
+      console.log(data);
+      on_finish(data);
+
+    });
+
+  };
+
+  const onClickSubmit = (msg)=>{
+    //setMessagesArray([...messages_array, {'msg':msg}]);
+    refresh(msg,(response)=>{
+      console.log("cb");
+      console.log(response);
+      let arr = response.split("|");
+      for(let i = arr.length - 1; i >= 0 ; i--)
+      {
+        if (arr[i].length === 0) arr.splice(i);
+      }
+      let objects = [];
+      for(let i = 0; i < arr.length; i++)
+      {
+        objects.push({msg:arr[i]})
+      }
+      setMessagesArray(objects);
+    });
+  };
+
+  const onClickdelete = ()=>{
+    //setMessagesArray([...messages_array, {'msg':msg}]);
+    fetch('https://p2-1643028221716.azurewebsites.net/delete_data?')
+    .then(data => data.text())
+    .then(data => {
+      console.log(data);
+    });
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className = 'root_container' style={styles.root_container}>
+        <MessagesContentHolder messages_array={messages_array}/>
+        <Input onClickSubmit={onClickSubmit}/>
+      </div>
+      <button className='delete-button' style={styles.button} onClick={onClickdelete}>delete</button>
     </div>
   );
-}
+};
+
+const styles = {
+  root_container:{
+    position: 'relative',
+    justifyContent: 'center',
+    minWidth : '300px',
+    maxWidth : '500px',
+    minHeight : '500px',
+    maxHeight : '700px',
+    marginLeft: "auto",
+    marginRight: "auto",
+  }
+};
 
 export default App;
