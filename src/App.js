@@ -2,6 +2,75 @@ import React, {useState} from 'react';
 import Input from './components/input';
 import MessagesContentHolder from './components/content_holder';
 
+export default class App extends React.Component {
+  
+  constructor(props) {
+    super(props);
+
+    this.state = {messages_array : []};
+  }
+
+  componentDidMount() {
+    console.log("componentDidMount " + JSON.stringify(this.state));
+    this.refresh("");
+  }
+
+  render() {
+    return (
+      <div className="App">
+      <div className = 'root_container' style={styles.root_container}>
+        <MessagesContentHolder messages_array={this.state.messages_array}/>
+        <Input onClickSubmit={this.onClickSubmit}/>
+      </div>
+      <button className='delete-button' style={styles.button} onClick={this.onClickdelete}>delete</button>
+    </div>
+    );
+  }
+
+  setMessagesArray(arr)
+  {
+    this.setState({ 'messages_array' : arr});
+  };
+
+  refresh = (msg)=>{
+
+    fetch('https://p2-1643028221716.azurewebsites.net/get_data?msg='+msg)
+    .then(data => data.text())
+    .then(data => {
+      console.log("cb");
+      console.log(data);
+      let arr = data.split("|");
+      for(let i = arr.length - 1; i >= 0 ; i--)
+      {
+        if (arr[i].length === 0) arr.splice(i);
+      }
+      let objects = [];
+      for(let i = 0; i < arr.length; i++)
+      {
+        objects.push({msg:arr[i]})
+      }
+      this.setMessagesArray(objects);
+    });
+
+  };
+
+  onClickSubmit = (msg)=>{
+    //setMessagesArray([...messages_array, {'msg':msg}]);
+    this.refresh(msg);
+  };
+
+  onClickdelete = ()=>{
+    //setMessagesArray([...messages_array, {'msg':msg}]);
+    fetch('https://p2-1643028221716.azurewebsites.net/delete_data?')
+    .then(data => data.text())
+    .then(data => { 
+      this.refresh("");
+    });
+  };
+
+
+};
+/*
 function App() 
 {
   const [messages_array, setMessagesArray] = useState([]);//([{msg:"fdsss"},{msg:"fdsss"}]);
@@ -57,7 +126,7 @@ function App()
     </div>
   );
 };
-
+*/
 const styles = {
   root_container:{
     position: 'relative',
@@ -71,4 +140,4 @@ const styles = {
   }
 };
 
-export default App;
+//export default App;
